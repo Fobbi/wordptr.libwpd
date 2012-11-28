@@ -1,0 +1,2 @@
+wordptr.libwpd
+==============
