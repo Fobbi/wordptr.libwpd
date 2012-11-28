@@ -1,0 +1,21 @@
+C_INIT([exsvc], [0.0.1]), [bugs@openiep.com])
+AM_INIT_AUTOMAKE([-Wall])
+exsvc_srcdir=`(cd $srcdir && pwd)`
+CFLAGS="-I$exsvc_srcdir/include -Wall -Wextra -g -std=c99 -D_GNU_SOURCE -fopenmp"
+LIBS="$LIBS"
+AC_PROG_CC
+AC_CONFIG_HEADERS([include/config.h])
+AC_HEADER_STDC
+AC_CHECK_FUNCS(unlink exit fprintf getppid getuid geteuid getpwnam)
+AC_CHECK_FUNCS(setuid fork syslog umask openlog chdir open snprintf)
+AC_CHECK_FUNCS(write free calloc freopen signal sigemptyset sigaddset)
+AC_CHECK_FUNCS(sigprocmask sigsuspend ftruncate)
+
+AC_SUBST(GLOBALCXXFLAGS, $CXXFLAGS)
+AC_SUBST(GLOBALLDFLAGS, $LDFLAGS)
+AC_CONFIG_FILES([
+        Makefile
+        src/Makefile
+])
+AC_OUTPUT
+

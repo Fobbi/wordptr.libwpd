@@ -1,0 +1,5 @@
+Authors of libwpd
+
+Jason Short entire files wp_common.c, wp_configuration.c, wp_daemonizer.c, 
+	wp_pool.c, wp_string.c, libwpd.c
+
