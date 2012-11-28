@@ -1,0 +1,11 @@
+commit decf8ea4f76284ea24aba0ddc07b459d4a268913
+Author: Jason Short <jgshort@openiep.com>
+Date:   Wed Nov 28 06:39:35 2012 -0800
+
+    Initial commit. Not a library, yet. Source modified from original project exsvcd.
+
+commit 8ccd4f2980706b0fc84d6a8d9b74407fc4c7212e
+Author: Jason Short <jgshort@openiep.com>
+Date:   Wed Nov 28 05:49:23 2012 -0800
+
+    Initial commit
