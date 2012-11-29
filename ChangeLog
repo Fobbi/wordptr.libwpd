@@ -1,3 +1,27 @@
+commit aa1ba45a9912e9d208a8ad155af8f1dece605db2
+Author: Jason Short <jgshort@openiep.com>
+Date:   Thu Nov 29 06:15:03 2012 -0800
+
+    Minor refactoring on wp_configuration.c
+
+commit 4caada19b6cb0b89e27461c35db1906ba7977f6c
+Author: Jason Short <jgshort@openiep.com>
+Date:   Thu Nov 29 05:57:32 2012 -0800
+
+    Converted project into a static library. Renamed libwpd.c to wpd.c to reflect the library change. Fixed up some broken headers.
+
+commit 60d5782c4230718326f974ca0c65a7f1e9eb5125
+Author: Jason Short <jgshort@openiep.com>
+Date:   Wed Nov 28 06:43:04 2012 -0800
+
+    Updated README.md
+
+commit 8479a40c00cd5569a823934827c84fd87860d8b7
+Author: Jason Short <jgshort@openiep.com>
+Date:   Wed Nov 28 06:40:33 2012 -0800
+
+    Updated ChangeLog.
+
 commit decf8ea4f76284ea24aba0ddc07b459d4a268913
 Author: Jason Short <jgshort@openiep.com>
 Date:   Wed Nov 28 06:39:35 2012 -0800
