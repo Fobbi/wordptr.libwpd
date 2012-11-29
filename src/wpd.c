@@ -1,7 +1,7 @@
 #include <stdlib.h>
 #include <stdio.h>
+
 #include <libwpd.h>
-#include <wp_daemonizer.h>
 
 int main(int argc, char* argv[]) {
   /* TODO: Utilize arguments. */

@@ -8,6 +8,7 @@
 #ifndef WP_COMMON__H
 #define WP_COMMON__H
 
+#include <stddef.h>
 #include <syslog.h>
 
 typedef int wp_status_t;

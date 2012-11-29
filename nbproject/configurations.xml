@@ -19,13 +19,17 @@
         <in>wp_pool.h</in>
         <in>wp_string.h</in>
       </df>
+      <df name="m4">
+      </df>
       <df name="src">
-        <in>libwpd.c</in>
+        <df name=".libs">
+        </df>
         <in>wp_common.c</in>
         <in>wp_configuration.c</in>
         <in>wp_daemonizer.c</in>
         <in>wp_pool.c</in>
         <in>wp_string.c</in>
+        <in>wpd.c</in>
       </df>
       <in>config.h</in>
     </df>
@@ -69,28 +73,45 @@
           </cTool>
         </makeTool>
       </makefileType>
+      <item path="config.h" ex="true" tool="3" flavor2="0">
+      </item>
       <item path="src/tests/libwpd_tests.c" ex="false" tool="0" flavor2="2">
         <cTool>
         </cTool>
       </item>
       <item path="src/wp_common.c" ex="false" tool="0" flavor2="2">
         <cTool>
+          <preprocessorList>
+            <Elem>PIC</Elem>
+          </preprocessorList>
         </cTool>
       </item>
       <item path="src/wp_configuration.c" ex="false" tool="0" flavor2="2">
         <cTool>
+          <preprocessorList>
+            <Elem>PIC</Elem>
+          </preprocessorList>
         </cTool>
       </item>
       <item path="src/wp_daemonizer.c" ex="false" tool="0" flavor2="2">
         <cTool>
+          <preprocessorList>
+            <Elem>PIC</Elem>
+          </preprocessorList>
         </cTool>
       </item>
       <item path="src/wp_pool.c" ex="false" tool="0" flavor2="2">
         <cTool>
+          <preprocessorList>
+            <Elem>PIC</Elem>
+          </preprocessorList>
         </cTool>
       </item>
       <item path="src/wp_string.c" ex="false" tool="0" flavor2="2">
         <cTool>
+          <preprocessorList>
+            <Elem>PIC</Elem>
+          </preprocessorList>
         </cTool>
       </item>
     </conf>

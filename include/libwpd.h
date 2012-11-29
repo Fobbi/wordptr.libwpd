@@ -8,6 +8,9 @@
 #ifndef WP_LIBWPD__H
 #define WP_LIBWPD__H
 
+#include <wp_common.h>
+#include <wp_daemonizer.h>
+
 const int MAX_RETRY;
 
 #endif
