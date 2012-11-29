@@ -215,7 +215,7 @@ static void wp_daemonizer_shutdown() {
         wp_log(stderr, instance->data->config, LOG_ERR, "Removed lock file: %s: %m", lock_file_name);
 
         /* TODO: Revise the removal of the configuration instance... */
-        wp_configuration_delete(&instance->data->config);
+        wp_configuration_delete(instance->data->config);
       }
       free(instance->data);
       instance->data = NULL;

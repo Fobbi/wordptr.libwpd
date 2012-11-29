@@ -22,7 +22,7 @@
       <df name="m4">
       </df>
       <df name="src">
-        <df name=".libs">
+        <df name=".deps">
         </df>
         <in>wp_common.c</in>
         <in>wp_configuration.c</in>

@@ -19,13 +19,13 @@
 #include <wp_configuration.h>
 
 #define DEFAULT_UID               "daemon"
-#define DEFAULT_CONFIG_FILE_PATH  "/etc/exsvcd.conf"
-#define DEFAULT_LOCK_FILE_NAME    "exsvcd.lock"
+#define DEFAULT_CONFIG_FILE_PATH  "/etc/libwpd.conf"
+#define DEFAULT_LOCK_FILE_NAME    "libwpd.lock"
 #define DEFAULT_RUN_PATH          "/tmp"
-#define PACKAGE_BUGREPORT         "ctor@narcissisticme.com"
-#define GITHUB_PROJECT_PATH       "https://github.com/jgshort/NarcissisticMe.com"
+#define PACKAGE_BUGREPORT         "ctor@wordptr.com"
+#define GITHUB_PROJECT_PATH       "https://github.com/jgshort/wordptr.libwpd"
 
-typedef void(*exec_config_switch_fn)(wp_configuration_t *, char *, char);
+typedef void(*exec_config_switch_fn)(wp_configuration_pt, char *, char);
 
 typedef struct __wp_configuration_private_t {
   /* TODO: Incorporate additional state as needed. */
@@ -40,6 +40,8 @@ typedef struct __wp_configuration_private_t {
   char *lock_file_path;
   char *uid;
 } __wp_configuration_private_t;
+
+typedef const wp_configuration_t* wp_configuration_cpt;
 
 static const char *const arg_shortoptions = "hscdl:p:vu";
 static const struct option arg_options[] = {
@@ -135,7 +137,7 @@ static char *wp_config_get_uid(const wp_configuration_t *self) {
   return self->data->uid;
 }
 
-static void wp_config_print_usage(wp_configuration_t *self, FILE *stream, int ec) {
+static void wp_config_print_usage(wp_configuration_pt self, FILE *stream, int ec) {
   fprintf(stream,
           "Usage: libwpd arg_options\n"
           "   --help            -h   Display this help screen.\n"
@@ -157,11 +159,11 @@ static void wp_config_print_usage(wp_configuration_t *self, FILE *stream, int ec
           "\t" GITHUB_PROJECT_PATH "\n"
           );
 
-  wp_configuration_delete(&self);
+  wp_configuration_delete(self);
   exit(ec);
 }
 
-static void wp_config_load_helper(wp_configuration_t *restrict config, char *pch, char w) {
+static void wp_config_load_helper(wp_configuration_pt restrict config, char *pch, char w) {
   switch(w) {
     case 'v':
       config->set_enable_verbose_logging(config, tolower(pch[0]) == 't');
@@ -200,7 +202,7 @@ static void wp_config_load_helper(wp_configuration_t *restrict config, char *pch
  * @param fn
  * @return
  */
-static wp_status_t wp_config_update_from_configuration_file(wp_configuration_t * config, exec_config_switch_fn fn) {
+static wp_status_t wp_config_update_from_configuration_file(wp_configuration_pt config, exec_config_switch_fn fn) {
 
   const char tok[2] = { '=', ';' };
   wp_status_t ret = WP_FAILURE;
@@ -252,7 +254,7 @@ static void free_str_cpy(char **dest, const char *src) {
   wp_safe_strcpy(&(*dest), src);
 }
 
-static wp_status_t wp_config_populate_from_args(wp_configuration_t *config, int argc, char **argv) {
+static wp_status_t wp_config_populate_from_args(wp_configuration_pt config, int argc, char **argv) {
   assert(config && config->data);
 
   int nextoption = 0;
@@ -319,7 +321,7 @@ static wp_status_t wp_config_populate_from_args(wp_configuration_t *config, int 
   return WP_SUCCESS;
 }
 
-static wp_status_t wp_config_populate_from_file(wp_configuration_t *self) {
+static wp_status_t wp_config_populate_from_file(wp_configuration_pt self) {
   return wp_config_update_from_configuration_file(self, &wp_config_load_helper);
 }
 
@@ -341,7 +343,7 @@ static void wp_config_print_configuration(const wp_configuration_t *config) {
  * @param self_out the created instance of the configuration object
  * @return WP_SUCCESS on success, otherwise WP_FAILURE
  */
-wp_status_t wp_configuration_new(wp_configuration_t **self_out) {
+wp_status_t wp_configuration_new(wp_configuration_pt *self_out) {
   wp_status_t ret = WP_FAILURE;
   wp_configuration_t *self = NULL;
 
@@ -393,30 +395,27 @@ wp_status_t wp_configuration_new(wp_configuration_t **self_out) {
  * @param config the object instance to destroy
  * @return WP_SUCCESS if successful, otherwise WP_FAILURE
  */
-wp_status_t wp_configuration_delete(wp_configuration_t **config) {
-  wp_configuration_t *self = *config;
-  if(self) {
-    if(self->data) {
+void wp_configuration_delete(wp_configuration_pt self) {
+  assert(self);
+  if(self->data) {
 
-      /* Assuming we're using wp_safe_strcpy... */
-      if(self->data->config_file_path) { 
-        free(self->data->config_file_path);
-      }
-      if(self->data->lock_file_path) { 
-        free(self->data->lock_file_path);
-      }
-      if(self->data->run_folder_path) { 
-        free(self->data->run_folder_path);
-      }
-      if(self->data->uid) { 
-        free(self->data->uid);
-      }
-      
-      free(self->data);
-      self->data = NULL;
+    /* Assuming we're using wp_safe_strcpy... */
+    if(self->data->config_file_path) { 
+      free(self->data->config_file_path);
     }
-    free(self);
-    self = NULL;
+    if(self->data->lock_file_path) { 
+      free(self->data->lock_file_path);
+    }
+    if(self->data->run_folder_path) { 
+      free(self->data->run_folder_path);
+    }
+    if(self->data->uid) { 
+      free(self->data->uid);
+    }
+
+    free(self->data);
+    self->data = NULL;
   }
-  return WP_SUCCESS;
+  free(self);
+  self = NULL;
 }

@@ -19,7 +19,7 @@ int main(int argc, char* argv[]) {
     }
   } else {
     /* TODO: Print out some help. */
-    wp_configuration_delete(&config);
+    wp_configuration_delete(config);
   }
   if(config && (status = wp_daemonizer_initialize(&daemon, config)) == WP_SUCCESS) {;
     /* Daemonize ourselves:

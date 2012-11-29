@@ -38,7 +38,7 @@ typedef struct wp_configuration {
   char *(*get_uid)(const struct wp_configuration *self);
   
   wp_configuration_private_t data;
-} wp_configuration_t;
+} wp_configuration_t, *wp_configuration_pt;
 
 /**
  * Create a new wp_configuration_t instance.
@@ -48,7 +48,7 @@ typedef struct wp_configuration {
  * @param argv argv from the command line
  * @return returns WP_SUCCESS on success, otherwise WP_FAILURE.
  */
-wp_status_t wp_configuration_new(wp_configuration_t **config);
+wp_status_t wp_configuration_new(wp_configuration_pt *config);
 
 /**
  * Deletes an wp_configuration_t instance.
@@ -56,6 +56,6 @@ wp_status_t wp_configuration_new(wp_configuration_t **config);
  *        success.
  * @return returns WP_SUCCESS.
  */
-wp_status_t wp_configuration_delete(wp_configuration_t **config);
+void wp_configuration_delete(wp_configuration_pt config);
 
 #endif	/* WP_CONFIGURATION_H */
