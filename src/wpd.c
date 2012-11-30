@@ -3,34 +3,27 @@
 
 #include <libwpd.h>
 
+static void reconfigure_daemon(const struct wp_daemonizer *daemon, const wp_configuration_pt config) {
+  daemon = daemon;
+  config->set_enable_verbose_logging(config, true);
+}
+
 int main(int argc, char* argv[]) {
-  /* TODO: Utilize arguments. */
-
   wp_status_t status = WP_FAILURE;
-  wp_configuration_t *config = NULL;
-  wp_daemonizer_t *daemon = NULL;
-
-  if((status = wp_configuration_new(&config)) == WP_SUCCESS) {
-    config->populate_from_file(config);
-    config->populate_from_args(config, argc, argv);
-
-    if(config->get_print_arguments(config) || config->get_print_config_options(config)) {
-      config->configuration_print(config);
-    }
-  } else {
-    /* TODO: Print out some help. */
-    wp_configuration_delete(config);
-  }
-  if(config && (status = wp_daemonizer_initialize(&daemon, config)) == WP_SUCCESS) {;
+  wp_daemonizer_pt daemon = NULL;
+  
+  if((status = wp_daemonizer_initialize(&daemon, &reconfigure_daemon)) == WP_SUCCESS) {;
+    atexit(&(*daemon->shutdown));
+    
     /* Daemonize ourselves:
      * fork; setsid; reset file mask; cd; reopen standard files
      */
-    atexit(&(*daemon->shutdown));
     if((status = daemon->daemonize(daemon)) == WP_SUCCESS) {
       /* Assuming we successfully daemonize, here we start. */  
       status = daemon->start(daemon);
     }
   }
 
+  argc = argc; argv = argv;
   return status;
 }

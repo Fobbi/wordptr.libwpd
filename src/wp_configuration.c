@@ -20,8 +20,8 @@
 
 #define DEFAULT_UID               "daemon"
 #define DEFAULT_CONFIG_FILE_PATH  "/etc/libwpd.conf"
-#define DEFAULT_LOCK_FILE_NAME    "libwpd.lock"
-#define DEFAULT_RUN_PATH          "/tmp"
+#define DEFAULT_LOCK_FILE_NAME    "/tmp/libwpd.lock"
+#define DEFAULT_RUN_PATH          "/"
 #define PACKAGE_BUGREPORT         "ctor@wordptr.com"
 #define GITHUB_PROJECT_PATH       "https://github.com/jgshort/wordptr.libwpd"
 
@@ -137,6 +137,8 @@ static char *wp_config_get_uid(const wp_configuration_t *self) {
   return self->data->uid;
 }
 
+/* TODO: Remove, keeping while I make some configuration changes */
+/*
 static void wp_config_print_usage(wp_configuration_pt self, FILE *stream, int ec) {
   fprintf(stream,
           "Usage: libwpd arg_options\n"
@@ -162,8 +164,9 @@ static void wp_config_print_usage(wp_configuration_pt self, FILE *stream, int ec
   wp_configuration_delete(self);
   exit(ec);
 }
+*/
 
-static void wp_config_load_helper(wp_configuration_pt restrict config, char *pch, char w) {
+static void wp_config_load_helper(const wp_configuration_pt config, char *pch, char w) {
   switch(w) {
     case 'v':
       config->set_enable_verbose_logging(config, tolower(pch[0]) == 't');
@@ -246,81 +249,6 @@ static wp_status_t wp_config_update_from_configuration_file(wp_configuration_pt 
   return ret;
 }
 
-static void free_str_cpy(char **dest, const char *src) {
-  if(*dest) {
-    free(*dest);
-    *dest = NULL;
-  }
-  wp_safe_strcpy(&(*dest), src);
-}
-
-static wp_status_t wp_config_populate_from_args(wp_configuration_pt config, int argc, char **argv) {
-  assert(config && config->data);
-
-  int nextoption = 0;
-  int optionindex = 0;
- 
-  /* Command line arguments override config file settings: */
-  do {
-    nextoption = getopt_long(argc, argv, arg_shortoptions, arg_options, &optionindex);
-    switch(nextoption) {
-      case 'v':
-        config->data->enable_verbose_logging = true;
-        break;
-      case 'd':
-        config->data->enable_daemon = true;
-        break;
-      case 's':
-        if(strcmp("config", optarg) == 0) {
-          config->data->print_config_options = true;
-        }
-        if(strcmp("args", optarg) == 0) {
-          config->data->print_arguments = true;
-        }
-        break;
-      case 'u':
-        free_str_cpy(&config->data->uid, optarg);
-        break;
-      case 'c':
-        free_str_cpy(&config->data->config_file_path, optarg);
-        break;
-      case 'p':
-        free_str_cpy(&config->data->run_folder_path, optarg);
-        break;
-      case 'l':
-        free_str_cpy(&config->data->lock_file_path, optarg);
-        break;
-      case -1:
-        break;
-      case '?':
-      case ':':
-        if(stderr) {
-          wp_config_print_usage(config, stderr, EXIT_FAILURE);
-        }
-        break;
-      case 'h':
-      default:
-        wp_config_print_usage(config, stdout, EXIT_SUCCESS);
-        break;
-    }
-  } while(nextoption != -1);
-
-  if(!config->data->lock_file_path) {
-    wp_safe_strcpy(&config->data->lock_file_path, DEFAULT_LOCK_FILE_NAME);
-  }
-  if(!config->data->run_folder_path) {
-    wp_safe_strcpy(&config->data->run_folder_path, DEFAULT_RUN_PATH);
-  }
-  if(!config->data->config_file_path) {
-    wp_safe_strcpy(&config->data->config_file_path, DEFAULT_CONFIG_FILE_PATH);
-  }
-  if(!config->data->uid) {
-    wp_safe_strcpy(&config->data->uid, DEFAULT_UID);
-  }
-  
-  return WP_SUCCESS;
-}
-
 static wp_status_t wp_config_populate_from_file(wp_configuration_pt self) {
   return wp_config_update_from_configuration_file(self, &wp_config_load_helper);
 }
@@ -352,7 +280,6 @@ wp_status_t wp_configuration_new(wp_configuration_pt *self_out) {
       self->get_enable_pid_lock = &wp_config_get_enable_pid_lock;
       self->set_enable_pid_lock = &wp_config_set_enable_pid_lock;
       self->populate_from_file = &wp_config_populate_from_file;
-      self->populate_from_args = &wp_config_populate_from_args;
       self->set_enable_pid_lock = &wp_config_set_enable_pid_lock;
       self->get_enable_pid_lock = &wp_config_get_enable_pid_lock;
       self->get_enable_verbose_logging = &wp_config_get_enable_verbose_logging;

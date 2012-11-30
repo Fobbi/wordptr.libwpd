@@ -17,14 +17,16 @@
 
 const size_t DEFAULT_BUFFER_SIZE = 16384;
 
+static wp_daemonizer_t *instance = NULL;
+
 typedef struct __wp_daemonizer_private_t {
   /* TODO: Incorporate additional state as needed. */
   wp_configuration_t *config;
   
+  wp_reconfigure_method_fn reconfigure_method;
   int created_pid_lock_file;
 } __wp_daemonizer_private_t;
 
-static wp_daemonizer_t *instance = NULL;
 
 /**
  * Redirect standard file descriptors to /dev/null.
@@ -277,12 +279,20 @@ static wp_status_t wp_daemonizer_start(const wp_daemonizer_t *self) {
   sigemptyset(&mask);
   sigaddset(&mask, SIGUSR1);
   sigprocmask(SIG_BLOCK, &mask, &oldmask);
+  
   while(true) {
     sigsuspend(&oldmask);
   }
+  
   sigprocmask(SIG_UNBLOCK, &mask, NULL);
 
   return WP_SUCCESS;
+}
+
+static void wp_daemonizer_set_reconfigure_method(const struct wp_daemonizer *self, wp_reconfigure_method_fn fn) {
+  assert(self);
+  
+  self->data->reconfigure_method = fn;
 }
 
 /**
@@ -290,38 +300,57 @@ static wp_status_t wp_daemonizer_start(const wp_daemonizer_t *self) {
  * @param self_out The reference to the singleton.
  * @return WP_SUCCESS if everything is great, otherwise NULL.
  */
-wp_status_t wp_daemonizer_initialize(wp_daemonizer_t **self_out, wp_configuration_t *config) {
+wp_status_t wp_daemonizer_initialize(wp_daemonizer_t **out, wp_reconfigure_method_fn fn) {
   wp_status_t ret = WP_FAILURE;
-  wp_daemonizer_t *self = NULL;
+  wp_configuration_pt config = NULL;
+  wp_daemonizer_pt self = NULL;
   
   if(instance) {
     ret = WP_SUCCESS;
   } else {
-    if((self = malloc(sizeof(*self)))) {
-      if((self->data = malloc(sizeof(*(self->data))))) {
-        /* TODO: Load from the command line or config file. */
-        self->data->config = config;
-        self->data->created_pid_lock_file = 0;
-        
-        /* Setup some static and instance methods... */
-        self->daemonize = &wp_daemonizer_daemonize;
-        self->signal_handler = &wp_daemonizer_signal_handler;
-        self->shutdown = &wp_daemonizer_shutdown;
-        self->install_signal_handlers = &wp_daemonizer_install_signal_handlers;
-        self->get_instance = &wp_daemonizer_get_instance;
-        self->start = &wp_daemonizer_start;
+    
+    if((ret = wp_configuration_new(&config)) != WP_SUCCESS) {
+      /* TODO: Print out some help. */
+      wp_configuration_delete(config);
+    } else {
+      config->populate_from_file(config);
+      /* config->populate_from_args(config, argc, argv); 
+      if(config->get_print_arguments(config) || config->get_print_config_options(config)) {
+        config->configuration_print(config);
+      }
+      */
+      
+      if((self = malloc(sizeof(*self)))) {
+        if((self->data = malloc(sizeof(*(self->data))))) {
+          /* TODO: Load from the command line or config file. */
+          self->data->config = config;
+          self->data->created_pid_lock_file = 0;
 
-        /* By default, install the signal handlers. Will probably change. */
-        self->install_signal_handlers();
-        instance = self;
-        ret = WP_SUCCESS;
-      } else {
-        free(self);
-        self = NULL;
+          /* Setup some static and instance methods... */
+          self->daemonize = &wp_daemonizer_daemonize;
+          self->signal_handler = &wp_daemonizer_signal_handler;
+          self->shutdown = &wp_daemonizer_shutdown;
+          self->install_signal_handlers = &wp_daemonizer_install_signal_handlers;
+          self->get_instance = &wp_daemonizer_get_instance;
+          self->start = &wp_daemonizer_start;
+          self->set_reconfigure_method = &wp_daemonizer_set_reconfigure_method;
+          self->data->reconfigure_method = fn;
+
+          /* Let's try to reconfigure ourselves.*/
+          fn(self, config);
+
+          /* By default, install the signal handlers. Will probably change. */
+          self->install_signal_handlers();
+          instance = self;
+          ret = WP_SUCCESS;
+        } else {
+          free(self);
+          self = NULL;
+        }
       }
     }
   }
 
-  *self_out = instance;
+  *out = instance;
   return ret; 
 }

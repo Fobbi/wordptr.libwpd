@@ -15,7 +15,7 @@ typedef struct __wp_configuration_private_t *wp_configuration_private_t;
 
 typedef struct wp_configuration {
   wp_status_t (*populate_from_file)(struct wp_configuration *self);
-  wp_status_t (*populate_from_args)(struct wp_configuration *self, int argc, char *argv[]);
+  
   /* TODO: revise: wp_status_t (*reload)(const struct wp_configuration *self); */
   
   bool (*get_enable_pid_lock)(const struct wp_configuration *self);

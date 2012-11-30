@@ -22,7 +22,11 @@
       <df name="m4">
       </df>
       <df name="src">
-        <df name=".deps">
+        <df name=".libs">
+          <in>libwpd.lai</in>
+          <in>libwpd.so.0</in>
+          <in>libwpd.so.0.0.0</in>
+          <in>wpd</in>
         </df>
         <in>wp_common.c</in>
         <in>wp_configuration.c</in>
