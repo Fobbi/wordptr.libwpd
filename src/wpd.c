@@ -1,11 +1,28 @@
+#include <assert.h>
+#include <signal.h>
 #include <stdlib.h>
 #include <stdio.h>
 
 #include <libwpd.h>
 
+static void daemon_start(const wp_daemonizer_t *self) {
+  assert(self); /* make compiler happy */
+  sigset_t mask, oldmask;
+  sigemptyset(&mask);
+  sigaddset(&mask, SIGUSR1);
+  sigprocmask(SIG_BLOCK, &mask, &oldmask);
+  
+  while(true) {
+    sigsuspend(&oldmask);
+  }
+  
+  sigprocmask(SIG_UNBLOCK, &mask, NULL);
+}
+
 static void reconfigure_daemon(const struct wp_daemonizer *daemon, const wp_configuration_pt config) {
   daemon = daemon;
   config->set_enable_verbose_logging(config, true);
+  config->set_daemon_start_method(config, &daemon_start);
 }
 
 int main(int argc, char* argv[]) {

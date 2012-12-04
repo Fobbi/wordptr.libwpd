@@ -10,8 +10,11 @@
 
 #include <stdbool.h>
 
+struct wp_daemonizer;
 struct __wp_configuration_private_t;
 typedef struct __wp_configuration_private_t *wp_configuration_private_t;
+
+typedef void (*wp_daemon_start_method_fn)(const struct wp_daemonizer *);
 
 typedef struct wp_configuration {
   wp_status_t (*populate_from_file)(struct wp_configuration *self);
@@ -36,6 +39,9 @@ typedef struct wp_configuration {
   char *(*get_run_folder_path)(const struct wp_configuration *self);
   char *(*get_lock_file_path)(const struct wp_configuration *self);
   char *(*get_uid)(const struct wp_configuration *self);
+
+  wp_daemon_start_method_fn (*get_daemon_start_method)(const struct wp_configuration *self);
+  void (*set_daemon_start_method)(const struct wp_configuration *self, wp_daemon_start_method_fn fn);
   
   wp_configuration_private_t data;
 } wp_configuration_t, *wp_configuration_pt;

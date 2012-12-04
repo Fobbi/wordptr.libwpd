@@ -39,6 +39,8 @@ typedef struct __wp_configuration_private_t {
   char *run_folder_path;
   char *lock_file_path;
   char *uid;
+  
+  wp_daemon_start_method_fn daemon_start_method;
 } __wp_configuration_private_t;
 
 typedef const wp_configuration_t* wp_configuration_cpt;
@@ -266,6 +268,16 @@ static void wp_config_print_configuration(const wp_configuration_t *config) {
   fprintf(stdout, "    config file path             : \"%s\"\n", config->get_config_file_path(config));
 }
 
+static void wp_config_set_daemon_start_method(const struct wp_configuration *self, wp_daemon_start_method_fn fn) {
+  assert(self && self->data);
+  self->data->daemon_start_method = fn;
+}
+
+static wp_daemon_start_method_fn wp_config_get_daemon_start_method(const struct wp_configuration *self) {
+  assert(self && self->data && self->data->daemon_start_method);
+  return self->data->daemon_start_method;
+}
+
 /**
  * Create a new instance of a configuration object from the provided parameters
  * @param self_out the created instance of the configuration object
@@ -277,6 +289,8 @@ wp_status_t wp_configuration_new(wp_configuration_pt *self_out) {
 
   if((self = malloc(sizeof(*self)))) {
     if((self->data = malloc(sizeof(*(self->data))))) {
+      self->set_daemon_start_method = &wp_config_set_daemon_start_method;
+      self->get_daemon_start_method = &wp_config_get_daemon_start_method;
       self->get_enable_pid_lock = &wp_config_get_enable_pid_lock;
       self->set_enable_pid_lock = &wp_config_set_enable_pid_lock;
       self->populate_from_file = &wp_config_populate_from_file;
@@ -298,6 +312,7 @@ wp_status_t wp_configuration_new(wp_configuration_pt *self_out) {
       self->configuration_print = &wp_config_print_configuration;
 
       /* set some defaults: */
+      self->data->daemon_start_method = NULL;
       self->data->enable_pid_lock = true;
       self->data->enable_daemon = false; /* no deamon by default.*/
       self->data->enable_verbose_logging = true;

@@ -139,7 +139,6 @@ static wp_status_t wp_daemonizer_daemonize(const wp_daemonizer_t *self) {
     return WP_SUCCESS;
   }
 
-    
   if((res = wp_daemonizer_set_uid(self)) == WP_SUCCESS) {
     /* Forking. Opening syslog for exsvcd. */
     if((pid = fork()) < 0) {
@@ -275,24 +274,24 @@ static void wp_daemonizer_install_signal_handlers() {
  */
 static wp_status_t wp_daemonizer_start(const wp_daemonizer_t *self) {
   assert(self); /* make compiler happy */
-  sigset_t mask, oldmask;
-  sigemptyset(&mask);
-  sigaddset(&mask, SIGUSR1);
-  sigprocmask(SIG_BLOCK, &mask, &oldmask);
+  sigset_t mask, oldmask;  
+  wp_daemon_start_method_fn start_fn = self->data->config->get_daemon_start_method(self->data->config);
   
-  while(true) {
-    sigsuspend(&oldmask);
+  
+  if(start_fn != NULL) {
+    start_fn(self);
+  } else {
+    sigemptyset(&mask);
+    sigaddset(&mask, SIGUSR1);
+    sigprocmask(SIG_BLOCK, &mask, &oldmask);
+
+    while(true) {
+      sigsuspend(&oldmask);
+    }
+    sigprocmask(SIG_UNBLOCK, &mask, NULL);
   }
   
-  sigprocmask(SIG_UNBLOCK, &mask, NULL);
-
   return WP_SUCCESS;
-}
-
-static void wp_daemonizer_set_reconfigure_method(const struct wp_daemonizer *self, wp_reconfigure_method_fn fn) {
-  assert(self);
-  
-  self->data->reconfigure_method = fn;
 }
 
 /**
@@ -325,7 +324,8 @@ wp_status_t wp_daemonizer_initialize(wp_daemonizer_t **out, wp_reconfigure_metho
           /* TODO: Load from the command line or config file. */
           self->data->config = config;
           self->data->created_pid_lock_file = 0;
-
+          self->data->reconfigure_method = fn;
+          
           /* Setup some static and instance methods... */
           self->daemonize = &wp_daemonizer_daemonize;
           self->signal_handler = &wp_daemonizer_signal_handler;
@@ -333,9 +333,7 @@ wp_status_t wp_daemonizer_initialize(wp_daemonizer_t **out, wp_reconfigure_metho
           self->install_signal_handlers = &wp_daemonizer_install_signal_handlers;
           self->get_instance = &wp_daemonizer_get_instance;
           self->start = &wp_daemonizer_start;
-          self->set_reconfigure_method = &wp_daemonizer_set_reconfigure_method;
-          self->data->reconfigure_method = fn;
-
+          
           /* Let's try to reconfigure ourselves.*/
           fn(self, config);
 
