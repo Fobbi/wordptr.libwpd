@@ -1,3 +1,21 @@
+commit ff4d13a3ef730bc418435fa84b69267c5b7a0cec
+Author: Jason Short <jgshort@openiep.com>
+Date:   Tue Dec 4 06:34:44 2012 -0800
+
+    Work in Progress: Adding hooks for main daemon loop.
+
+commit 07ab51e2f26557549a3cd465528a33942317b7fe
+Author: Jason Short <jgshort@openiep.com>
+Date:   Fri Nov 30 06:33:58 2012 -0800
+
+    Added configuration hook and removed some extraneous configuration sections that will no longer work within the context of a library.
+
+commit 072abac6f2a912cbcfb0ea74058d40103d730ea3
+Author: Jason Short <jgshort@openiep.com>
+Date:   Thu Nov 29 06:15:30 2012 -0800
+
+    ChangeLog updated.
+
 commit aa1ba45a9912e9d208a8ad155af8f1dece605db2
 Author: Jason Short <jgshort@openiep.com>
 Date:   Thu Nov 29 06:15:03 2012 -0800
