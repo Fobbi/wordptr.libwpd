@@ -40,7 +40,7 @@ typedef struct __wp_configuration_private_t {
   char *lock_file_path;
   char *uid;
   
-  wp_daemon_start_method_fn daemon_start_method;
+  wp_daemon_on_start_method_fn daemon_on_start_method;
 } __wp_configuration_private_t;
 
 typedef const wp_configuration_t* wp_configuration_cpt;
@@ -124,6 +124,16 @@ static char *wp_config_get_config_file_path(const wp_configuration_t *self) {
   return self->data->config_file_path;
 }
 
+static void wp_config_set_config_file_path(const wp_configuration_t *self, const char *value) {
+  assert(self && value);
+  
+  if(self->data->config_file_path) {
+    free(self->data->config_file_path);
+  }
+  
+  wp_safe_strcpy(&self->data->config_file_path, value);
+}
+
 static char *wp_config_get_run_folder_path(const wp_configuration_t *self) {
   assert(self && self->data);
   return self->data->run_folder_path;
@@ -132,6 +142,16 @@ static char *wp_config_get_run_folder_path(const wp_configuration_t *self) {
 static char *wp_config_get_lock_file_path(const wp_configuration_t *self) {
   assert(self && self->data);
   return self->data->lock_file_path;
+}
+
+static void wp_config_set_lock_file_path(const wp_configuration_t *self, const char *value) {
+  assert(self && value);
+  
+  if(self->data->lock_file_path) {
+    free(self->data->lock_file_path);
+  }
+  
+  wp_safe_strcpy(&self->data->lock_file_path, value);
 }
 
 static char *wp_config_get_uid(const wp_configuration_t *self) {
@@ -207,7 +227,7 @@ static void wp_config_load_helper(const wp_configuration_pt config, char *pch, c
  * @param fn
  * @return
  */
-static wp_status_t wp_config_update_from_configuration_file(wp_configuration_pt config, exec_config_switch_fn fn) {
+static wp_status_t wp_config_update_from_configuration_file(wp_configuration_pt config, exec_config_switch_fn fn, const char *file_path) {
 
   const char tok[2] = { '=', ';' };
   wp_status_t ret = WP_FAILURE;
@@ -219,7 +239,9 @@ static wp_status_t wp_config_update_from_configuration_file(wp_configuration_pt 
   /* TODO: Fix, this is currently broken as we will not (yet) have a path populated
    * from the command line... */
   FILE *file = NULL;
-  if(config->get_config_file_path(config) != NULL) {
+  if(file_path != NULL) {
+    file = fopen(file_path, "r");
+  } else if(config->get_config_file_path(config) != NULL) {
     file = fopen(config->get_config_file_path(config), "r");
   }
   if(file == NULL) {
@@ -251,8 +273,8 @@ static wp_status_t wp_config_update_from_configuration_file(wp_configuration_pt 
   return ret;
 }
 
-static wp_status_t wp_config_populate_from_file(wp_configuration_pt self) {
-  return wp_config_update_from_configuration_file(self, &wp_config_load_helper);
+static wp_status_t wp_config_populate_from_file(wp_configuration_pt self, const char *file_path) {
+  return wp_config_update_from_configuration_file(self, &wp_config_load_helper, file_path);
 }
 
 static void wp_config_print_configuration(const wp_configuration_t *config) {
@@ -268,14 +290,14 @@ static void wp_config_print_configuration(const wp_configuration_t *config) {
   fprintf(stdout, "    config file path             : \"%s\"\n", config->get_config_file_path(config));
 }
 
-static void wp_config_set_daemon_start_method(const struct wp_configuration *self, wp_daemon_start_method_fn fn) {
+static void wp_config_set_daemon_on_start_method(const struct wp_configuration *self, wp_daemon_on_start_method_fn fn) {
   assert(self && self->data);
-  self->data->daemon_start_method = fn;
+  self->data->daemon_on_start_method = fn;
 }
 
-static wp_daemon_start_method_fn wp_config_get_daemon_start_method(const struct wp_configuration *self) {
-  assert(self && self->data && self->data->daemon_start_method);
-  return self->data->daemon_start_method;
+static wp_daemon_on_start_method_fn wp_config_get_daemon_on_start_method(const struct wp_configuration *self) {
+  assert(self && self->data && self->data->daemon_on_start_method);
+  return self->data->daemon_on_start_method;
 }
 
 /**
@@ -289,8 +311,8 @@ wp_status_t wp_configuration_new(wp_configuration_pt *self_out) {
 
   if((self = malloc(sizeof(*self)))) {
     if((self->data = malloc(sizeof(*(self->data))))) {
-      self->set_daemon_start_method = &wp_config_set_daemon_start_method;
-      self->get_daemon_start_method = &wp_config_get_daemon_start_method;
+      self->set_daemon_on_start_method = &wp_config_set_daemon_on_start_method;
+      self->get_daemon_on_start_method = &wp_config_get_daemon_on_start_method;
       self->get_enable_pid_lock = &wp_config_get_enable_pid_lock;
       self->set_enable_pid_lock = &wp_config_set_enable_pid_lock;
       self->populate_from_file = &wp_config_populate_from_file;
@@ -305,14 +327,16 @@ wp_status_t wp_configuration_new(wp_configuration_pt *self_out) {
       self->get_enable_daemon = &wp_config_get_enable_daemon;
       self->set_enable_daemon = &wp_config_set_enable_daemon;
       self->get_config_file_path = &wp_config_get_config_file_path;
+      self->set_config_file_path = &wp_config_set_config_file_path;
       self->get_run_folder_path = &wp_config_get_run_folder_path;
       self->get_lock_file_path = &wp_config_get_lock_file_path;
+      self->set_lock_file_path = &wp_config_set_lock_file_path;
       self->get_uid = &wp_config_get_uid;
 
       self->configuration_print = &wp_config_print_configuration;
 
       /* set some defaults: */
-      self->data->daemon_start_method = NULL;
+      self->data->daemon_on_start_method = NULL;
       self->data->enable_pid_lock = true;
       self->data->enable_daemon = false; /* no deamon by default.*/
       self->data->enable_verbose_logging = true;

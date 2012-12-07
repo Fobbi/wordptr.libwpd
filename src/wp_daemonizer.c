@@ -272,10 +272,10 @@ static void wp_daemonizer_install_signal_handlers() {
  * @param self pointer to an instance of the daemonizer. Not utilized at this time.
  * @return WP_SUCCESS
  */
-static wp_status_t wp_daemonizer_start(const wp_daemonizer_t *self) {
+static wp_status_t wp_daemonizer_on_start(const wp_daemonizer_t *self) {
   assert(self); /* make compiler happy */
   sigset_t mask, oldmask;  
-  wp_daemon_start_method_fn start_fn = self->data->config->get_daemon_start_method(self->data->config);
+  wp_daemon_on_start_method_fn start_fn = self->data->config->get_daemon_on_start_method(self->data->config);
   
   
   if(start_fn != NULL) {
@@ -299,7 +299,7 @@ static wp_status_t wp_daemonizer_start(const wp_daemonizer_t *self) {
  * @param self_out The reference to the singleton.
  * @return WP_SUCCESS if everything is great, otherwise NULL.
  */
-wp_status_t wp_daemonizer_initialize(wp_daemonizer_t **out, wp_reconfigure_method_fn fn) {
+wp_status_t wp_daemonizer_initialize(wp_daemonizer_t **out, wp_reconfigure_method_fn on_reconfigure) {
   wp_status_t ret = WP_FAILURE;
   wp_configuration_pt config = NULL;
   wp_daemonizer_pt self = NULL;
@@ -312,7 +312,7 @@ wp_status_t wp_daemonizer_initialize(wp_daemonizer_t **out, wp_reconfigure_metho
       /* TODO: Print out some help. */
       wp_configuration_delete(config);
     } else {
-      config->populate_from_file(config);
+      config->populate_from_file(config, NULL);
       /* config->populate_from_args(config, argc, argv); 
       if(config->get_print_arguments(config) || config->get_print_config_options(config)) {
         config->configuration_print(config);
@@ -324,7 +324,7 @@ wp_status_t wp_daemonizer_initialize(wp_daemonizer_t **out, wp_reconfigure_metho
           /* TODO: Load from the command line or config file. */
           self->data->config = config;
           self->data->created_pid_lock_file = 0;
-          self->data->reconfigure_method = fn;
+          self->data->reconfigure_method = on_reconfigure;
           
           /* Setup some static and instance methods... */
           self->daemonize = &wp_daemonizer_daemonize;
@@ -332,10 +332,10 @@ wp_status_t wp_daemonizer_initialize(wp_daemonizer_t **out, wp_reconfigure_metho
           self->shutdown = &wp_daemonizer_shutdown;
           self->install_signal_handlers = &wp_daemonizer_install_signal_handlers;
           self->get_instance = &wp_daemonizer_get_instance;
-          self->start = &wp_daemonizer_start;
+          self->start = &wp_daemonizer_on_start;
           
           /* Let's try to reconfigure ourselves.*/
-          fn(self, config);
+          on_reconfigure(self, config);
 
           /* By default, install the signal handlers. Will probably change. */
           self->install_signal_handlers();

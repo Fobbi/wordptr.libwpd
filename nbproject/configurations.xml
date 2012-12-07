@@ -77,8 +77,6 @@
           </cTool>
         </makeTool>
       </makefileType>
-      <item path="config.h" ex="true" tool="3" flavor2="0">
-      </item>
       <item path="src/tests/libwpd_tests.c" ex="false" tool="0" flavor2="2">
         <cTool>
         </cTool>

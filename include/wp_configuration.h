@@ -14,10 +14,10 @@ struct wp_daemonizer;
 struct __wp_configuration_private_t;
 typedef struct __wp_configuration_private_t *wp_configuration_private_t;
 
-typedef void (*wp_daemon_start_method_fn)(const struct wp_daemonizer *);
+typedef void (*wp_daemon_on_start_method_fn)(const struct wp_daemonizer *);
 
 typedef struct wp_configuration {
-  wp_status_t (*populate_from_file)(struct wp_configuration *self);
+  wp_status_t (*populate_from_file)(struct wp_configuration *self, const char *file_path);
   
   /* TODO: revise: wp_status_t (*reload)(const struct wp_configuration *self); */
   
@@ -36,12 +36,19 @@ typedef struct wp_configuration {
   void (*configuration_print)(const struct wp_configuration *self);
 
   char *(*get_config_file_path)(const struct wp_configuration *self);
+  void (*set_config_file_path)(const struct wp_configuration *self, const char *value);
   char *(*get_run_folder_path)(const struct wp_configuration *self);
   char *(*get_lock_file_path)(const struct wp_configuration *self);
+  void (*set_lock_file_path)(const struct wp_configuration *self, const char *value);
   char *(*get_uid)(const struct wp_configuration *self);
 
-  wp_daemon_start_method_fn (*get_daemon_start_method)(const struct wp_configuration *self);
-  void (*set_daemon_start_method)(const struct wp_configuration *self, wp_daemon_start_method_fn fn);
+  /**
+   * Get the current wp_daemon_start_method_fn function pointer reference called
+   * on daemon start.
+   * @param self self must be an instance of the wp_configuration_pt.
+   */
+  wp_daemon_on_start_method_fn (*get_daemon_on_start_method)(const struct wp_configuration *self);
+  void (*set_daemon_on_start_method)(const struct wp_configuration *self, wp_daemon_on_start_method_fn fn);
   
   wp_configuration_private_t data;
 } wp_configuration_t, *wp_configuration_pt;
