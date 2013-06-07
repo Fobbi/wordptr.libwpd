@@ -28,6 +28,7 @@ typedef struct __wp_daemonizer_private_t {
 } __wp_daemonizer_private_t;
 
 
+/* sed-begin-null-file-descriptors */
 /**
  * Redirect standard file descriptors to /dev/null.
  * @param self pointer to an instance of the daemonizer. Not utilized at this time.
@@ -48,6 +49,7 @@ static void wp_daemonizer_null_file_descriptors(const wp_daemonizer_t *self) {
     }
   }
 }
+/* sed-end-null-file-descriptors */
 
 /**
  * Open the lock file name and save the PID of the daemon into it.
@@ -127,6 +129,7 @@ static wp_status_t wp_daemonizer_set_uid(const wp_daemonizer_t *self) {
   return WP_SUCCESS;
 }
 
+/* sed-begin-daemonize */
 static wp_status_t wp_daemonizer_daemonize(const wp_daemonizer_t *self) {
   wp_status_t res = WP_FAILURE;
   wp_configuration_t *config = NULL;
@@ -200,6 +203,7 @@ static wp_status_t wp_daemonizer_daemonize(const wp_daemonizer_t *self) {
   
   exit(EXIT_FAILURE);
 }
+/* sed-end-daemonize */
 
 static void wp_daemonizer_shutdown() {
   /* Perform cleanup here */
@@ -294,6 +298,7 @@ static wp_status_t wp_daemonizer_on_start(const wp_daemonizer_t *self) {
   return WP_SUCCESS;
 }
 
+/* sed-begin-daemonizer-initialize */
 /**
  * Initialize the singleton instance of the daemon.
  * @param self_out The reference to the singleton.
@@ -352,3 +357,5 @@ wp_status_t wp_daemonizer_initialize(wp_daemonizer_t **out, wp_reconfigure_metho
   *out = instance;
   return ret; 
 }
+/* sed-end-daemonizer-initialize */
+

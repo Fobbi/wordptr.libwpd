@@ -5,6 +5,7 @@
 
 #include <libwpd.h>
 
+/* sed-begin-wait-loop */
 static void daemon_on_start(const wp_daemonizer_t *self) {
   assert(self); /* make compiler happy */
   sigset_t mask, oldmask;
@@ -18,6 +19,7 @@ static void daemon_on_start(const wp_daemonizer_t *self) {
   
   sigprocmask(SIG_UNBLOCK, &mask, NULL);
 }
+/* sed-end-wait-loop */
 
 static void reconfigure_daemon(const struct wp_daemonizer *daemon, const wp_configuration_pt config) {
   daemon = daemon;
